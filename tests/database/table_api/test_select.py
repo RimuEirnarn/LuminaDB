@@ -1,7 +1,7 @@
 """Test Table API select"""
 
-from sqlite_database import Database, text, integer
-from sqlite_database.operators import op, eq
+from luminadb import Database, text, integer
+from luminadb.operators import op, eq
 
 from ..setup import (
     GROUP_BASE,

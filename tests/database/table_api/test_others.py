@@ -4,9 +4,9 @@ from sqlite3 import OperationalError
 from random import randint
 
 from pytest import raises
-from sqlite_database import Database, integer, text
-from sqlite_database.workers import DatabaseWorker
-from sqlite_database.index import Index
+from luminadb import Database, integer, text
+from luminadb.workers import DatabaseWorker
+from luminadb.index import Index
 
 from ..setup import setup_database_fns, setup_database, count
 

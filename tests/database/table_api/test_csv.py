@@ -1,7 +1,7 @@
 """Test CSV"""
 
-from sqlite_database import Database
-from sqlite_database.csv import to_csv_file, to_csv_string
+from luminadb import Database
+from luminadb.csv import to_csv_file, to_csv_string
 
 from ..setup import setup_database, pstdout, temp_dir
 

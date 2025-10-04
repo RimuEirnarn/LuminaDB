@@ -1,6 +1,6 @@
 # Initialize development project directory
 
-if [ ! -d sqlite_database ]; then
+if [ ! -d luminadb ]; then
     printf "\033[31mError\033[0m: Not in project root directory!\n"
     exit 1
 fi

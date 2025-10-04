@@ -1,5 +1,5 @@
 @echo off
 call .venv\Scripts\activate.bat
 
-pylint --rcfile ./dev-config/pylint.toml sqlite_database
+pylint --rcfile ./dev-config/pylint.toml luminadb
 pytest --config-file ./dev-config/pytest.ini

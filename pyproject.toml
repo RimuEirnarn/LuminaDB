@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sqlite_database"
+name = "LuminaDB"
 description = "Easy to use SQLite wrapper"
 authors = [
     {name = "Rimu Eirnarn", email = "rimuru720@proton.me"}
@@ -19,13 +19,13 @@ classifiers = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/RimuEirnarn/sqlite_database"
-Documentation = "https://sqlite-database.rtfd.io"
-Repository = "https://github.com/RimuEirnarn/sqlite_database.git"
+Homepage = "https://github.com/RimuEirnarn/luminadb"
+Documentation = "https://luminadb.rtfd.io"
+Repository = "https://github.com/RimuEirnarn/luminadb.git"
 
 [tool.setuptools]
 zip-safe = true
-packages = ["sqlite_database", "sqlite_database.models", "sqlite_database.workers"]
+packages = ["luminadb", "luminadb.models", "luminadb.workers"]
 
 [project.optional-dependencies]
 dev = ["pytest", "pylint", "black"]

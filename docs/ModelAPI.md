@@ -49,7 +49,7 @@ Create a file like `db.py` to initialize your SQLite database.
 
 ```py
 # db.py
-from sqlite_database import Database
+from luminadb import Database
 
 db = Database(":memory:")  # or use "your_file.db" to persist data
 ```
@@ -65,7 +65,7 @@ Each model is a Python class with typed fields and a schema definition.
 ```py
 # model/notes.py
 from uuid import uuid4
-from sqlite_database import model, BaseModel, Primary
+from luminadb import model, BaseModel, Primary
 from ..db import db
 
 @model(db)
@@ -159,7 +159,7 @@ Here’s a small CLI app to tie it all together:
 ```py
 from enum import IntEnum
 from uuid import uuid4
-from sqlite_database import Database, model, BaseModel, Primary, Null
+from luminadb import Database, model, BaseModel, Primary, Null
 
 db = Database(":memory:")
 

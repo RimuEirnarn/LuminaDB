@@ -8,10 +8,10 @@ from types import SimpleNamespace
 from tempfile import mkdtemp
 from pathlib import Path
 
-from sqlite_database import Column, Database, integer, text
-from sqlite_database.models import Primary, Unique, model, BaseModel, Foreign, CASCADE
-from sqlite_database.utils import crunch
-from sqlite_database.functions import Function
+from luminadb import Column, Database, integer, text
+from luminadb.models import Primary, Unique, model, BaseModel, Foreign, CASCADE
+from luminadb.utils import crunch
+from luminadb.functions import Function
 
 def parse(data):
     """parse"""

@@ -8,7 +8,7 @@ fi
 
 . .venv/bin/activate
 
-if ! pylint --rcfile ./dev-config/pylint.toml sqlite_database; then
+if ! pylint --rcfile ./dev-config/pylint.toml luminadb; then
     echo "Pylint error"
     exit 1
 fi

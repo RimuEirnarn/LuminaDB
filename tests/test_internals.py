@@ -1,5 +1,5 @@
 # pylint: disable=all
-from sqlite_database.query_builder.table_creation import extract_table
+from luminadb.query_builder.table_creation import extract_table
 
 SQL = "CREATE TABLE tbl (row1 text not null, row2 text not null, foreign key (row2) references tbl (row1) on delete cascade on update cascade)"
 

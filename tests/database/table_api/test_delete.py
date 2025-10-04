@@ -1,6 +1,6 @@
 """Table API delete tests"""
 
-from sqlite_database import Database
+from luminadb import Database
 from ..setup import setup_database_builder, setup_database_fns, USER_BASE
 
 def test_delete():

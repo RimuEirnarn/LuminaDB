@@ -4,12 +4,12 @@ This library is a simple wrapper for Python's built-in SQLite package. It simpli
 
 ## Table of Contents
 
-- [SQLite Database (Beginner-Friendly Guide to Table API)](#sqlite-database-beginner-friendly-guide-to-table-api)
+- [SQLite Database (Beginner-Friendly Guide to Table API)](#luminadb-beginner-friendly-guide-to-table-api)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Getting Started](#getting-started)
     - [What is SQLite?](#what-is-sqlite)
-    - [SQLite Database](#sqlite-database)
+    - [SQLite Database](#luminadb)
     - [Installation](#installation)
     - [Creating a Database](#creating-a-database)
     - [Creating a Table](#creating-a-table)
@@ -46,13 +46,13 @@ There's 2 taste what we've developed, both are named as "TableAPI" and "ModelAPI
 If the library is available on PyPI, install it using:
 
 ```bash
-pip install sqlite-database
+pip install luminadb
 ```
 
 Then, import it in your script:
 
 ```python
-from sqlite_database import Database, integer, text
+from luminadb import Database, integer, text
 ```
 
 ### Creating a Database
@@ -138,7 +138,7 @@ users.delete({"id": 1})
 You can filter data using operators:
 
 ```python
-from sqlite_database.operators import eq, like, between
+from luminadb.operators import eq, like, between
 ```
 
 Example: Select users where `id` is 2:
@@ -173,7 +173,7 @@ for page in users.paginate_select(length=2):
 Export a table to CSV:
 
 ```python
-from sqlite_database.csv import to_csv_file
+from luminadb.csv import to_csv_file
 to_csv_file(users, "users.csv")
 ```
 

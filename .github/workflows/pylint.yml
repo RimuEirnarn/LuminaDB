@@ -28,4 +28,4 @@ jobs:
         pip install -r ./dev-requirements.txt
     - name: Analysing the code with pylint
       run: |
-        pylint sqlite_database --rcfile dev-config/pylint.toml -f github -r y
+        pylint luminadb --rcfile dev-config/pylint.toml -f github -r y

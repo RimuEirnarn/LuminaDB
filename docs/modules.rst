@@ -1,7 +1,7 @@
-sqlite_database
+luminadb
 ===============
 
 .. toctree::
    :maxdepth: 4
 
-   sqlite_database
+   luminadb

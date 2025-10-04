@@ -1,7 +1,7 @@
 # Used as utility thingy
 
 _in_root() {
-    if [ -d ./sqlite_database ]; then
+    if [ -d ./luminadb ]; then
         return 0;
     fi
     return 1
@@ -68,7 +68,7 @@ run-pylint() {
     info "Running pylint..."
     [ ! _check_inroot ] && return 1
     if [ "$1" == "" ]; then
-        src="./sqlite_database"
+        src="./luminadb"
     else
         src="$1"
     fi
@@ -81,7 +81,7 @@ run-black(){
     info "Running black..."
     [ ! _check_inroot ] && return 1
     if [ "$1" == "" ]; then
-        src="./sqlite_database"
+        src="./luminadb"
     else
         src="$1"
     fi
@@ -93,7 +93,7 @@ run-pytest(){
     info "Running pytest"
     [ ! _check_inroot ] && return 1
     if [ "$1" == "" ]; then
-        src="./sqlite_database"
+        src="./luminadb"
     else
         src="$1"
     fi

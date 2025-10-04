@@ -17,10 +17,10 @@ sys.path.insert(0, (
         )
     )
 ))
-import sqlite_database
-sqlite_database.test_installed()
+import luminadb
+luminadb.test_installed()
 
-project = 'sqlite_database'
+project = 'luminadb'
 copyright = '2025, Rimu Aerisya (Rimu Eirnarn)'
 author = 'Rimu Aerisya (Rimu Eirnarn)'
 

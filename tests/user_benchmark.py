@@ -22,8 +22,8 @@ from sys import path
 from os.path import realpath
 path.insert(0, realpath("../"))
 
-from sqlite_database import Database, text, integer
-from sqlite_database._debug import STATE
+from luminadb import Database, text, integer
+from luminadb._debug import STATE
 
 
 STATE['DEBUG'] = True

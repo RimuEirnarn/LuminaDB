@@ -1,4 +1,4 @@
-PROJECT_ROOT="/data/data/com.termux/files/home/Stuff/sqlite_database"
+PROJECT_ROOT="/data/data/com.termux/files/home/Stuff/luminadb"
 
 
 if [ -d "$PROJECT_ROOT" ]; then

@@ -1,9 +1,9 @@
 """Table API update test"""
 
 from pytest import raises
-from sqlite_database import Database
-from sqlite_database.operators import op
-from sqlite_database.errors import TableRemovedError
+from luminadb import Database
+from luminadb.operators import op
+from luminadb.errors import TableRemovedError
 
 from ..setup import (
     database,

@@ -1,4 +1,4 @@
-"""Setup for sqlite_database"""
+"""Setup for luminadb"""
 from setuptools import setup
 
-setup(name='sqlite_database')
+setup(name='luminadb')

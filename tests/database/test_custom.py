@@ -1,8 +1,8 @@
 """Test Custom"""
 
-from sqlite_database import Database, this
-from sqlite_database.operators import in_
-from sqlite_database._debug import STATE
+from luminadb import Database, this
+from luminadb.operators import in_
+from luminadb._debug import STATE
 
 from .setup import setup_orderable, file, pstdout
 

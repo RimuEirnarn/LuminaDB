@@ -1,8 +1,8 @@
 """Table API insertion tests"""
 
 from pytest import raises
-from sqlite_database import Database, text, Null
-from sqlite_database.errors import CuteDemonLordException
+from luminadb import Database, text, Null
+from luminadb.errors import CuteDemonLordException
 
 from ..setup import groups, users, database, save_report, GROUP_NEW, USER_NEW
 

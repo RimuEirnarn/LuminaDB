@@ -74,6 +74,6 @@ class Database:
 
 i'm not satisfied by the result and then began to develop this repo!
 
-## "Why is the name 'sqlite_database'?"
+## "Why is the name 'luminadb'?"
 
 I have some problems with myself, the name just be like that because i have trouble naming something and i usually think quickly (and it's a quite of problem)

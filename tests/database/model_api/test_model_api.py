@@ -2,10 +2,10 @@
 
 from uuid import UUID, uuid4
 from pytest import raises
-from sqlite_database import Database, model, Primary, Unique, BaseModel
-from sqlite_database.models import hook, validate
-from sqlite_database.models.mixin import ScopeMixin, ChunkableMixin
-from sqlite_database.models.errors import ValidationError, NoDataReturnedError
+from luminadb import Database, model, Primary, Unique, BaseModel
+from luminadb.models import hook, validate
+from luminadb.models.mixin import ScopeMixin, ChunkableMixin
+from luminadb.models.errors import ValidationError, NoDataReturnedError
 
 from ..setup import setup_model_api
 
