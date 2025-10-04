@@ -1,9 +1,9 @@
 API Reference
 =============
 
-API Reference to luminadb
+API Reference to LuminaDB
 
-SQLite Database
+LuminaDB
 ---------------
 
 .. toctree::

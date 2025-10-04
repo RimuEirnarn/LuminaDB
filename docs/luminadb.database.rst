@@ -1,4 +1,4 @@
-sqlite\_database.database module
+luminadb.database module
 ================================
 
 .. automodule:: luminadb.database

@@ -1,4 +1,4 @@
-sqlite\_database.query\_builder module
+luminadb.query\_builder module
 ======================================
 
 .. automodule:: luminadb.query_builder

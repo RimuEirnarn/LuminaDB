@@ -1,10 +1,10 @@
-sqlite\_database.model package
+luminadb.model package
 ==============================
 
 Submodules
 ----------
 
-sqlite\_database.model.errors module
+luminadb.model.errors module
 ------------------------------------
 
 .. automodule:: luminadb.model.errors
@@ -12,7 +12,7 @@ sqlite\_database.model.errors module
    :undoc-members:
    :show-inheritance:
 
-sqlite\_database.model.helpers module
+luminadb.model.helpers module
 -------------------------------------
 
 .. automodule:: luminadb.model.helpers
@@ -20,7 +20,7 @@ sqlite\_database.model.helpers module
    :undoc-members:
    :show-inheritance:
 
-sqlite\_database.model.query\_builder module
+luminadb.model.query\_builder module
 --------------------------------------------
 
 .. automodule:: luminadb.model.query_builder

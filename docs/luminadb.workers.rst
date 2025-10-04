@@ -1,4 +1,4 @@
-sqlite\_database.workers package
+luminadb.workers package
 ================================
 
 Submodules

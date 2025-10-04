@@ -1,4 +1,4 @@
-sqlite\_database.models package
+luminadb.models package
 ===============================
 
 Submodules

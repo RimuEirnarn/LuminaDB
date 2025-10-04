@@ -1,4 +1,4 @@
-sqlite\_database.model.errors module
+luminadb.model.errors module
 ====================================
 
 .. automodule:: luminadb.model.errors

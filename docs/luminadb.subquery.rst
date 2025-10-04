@@ -1,4 +1,4 @@
-sqlite\_database.subquery module
+luminadb.subquery module
 ================================
 
 .. automodule:: luminadb.subquery

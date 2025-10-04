@@ -1,4 +1,4 @@
-sqlite\_database.operators module
+luminadb.operators module
 =================================
 
 .. automodule:: luminadb.operators

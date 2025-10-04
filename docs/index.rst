@@ -3,13 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-luminadb Documentation
+LuminaDB Documentation
 =============================
 
 .. toctree::
     :maxdepth: 12
 
-    :caption: SQLite Database
+    :caption: LuminaDB
 
     SimpleGuide
     ModelAPI

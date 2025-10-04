@@ -1,4 +1,4 @@
-sqlite\_database.subexp module
+luminadb.subexp module
 ==============================
 
 .. automodule:: luminadb.subexp

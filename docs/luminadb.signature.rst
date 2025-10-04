@@ -1,4 +1,4 @@
-sqlite\_database.signature module
+luminadb.signature module
 =================================
 
 .. automodule:: luminadb.signature

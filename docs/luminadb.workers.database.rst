@@ -1,4 +1,4 @@
-sqlite\_database.workers.database module
+luminadb.workers.database module
 ========================================
 
 .. automodule:: luminadb.workers.database

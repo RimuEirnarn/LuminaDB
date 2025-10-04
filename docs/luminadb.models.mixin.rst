@@ -1,4 +1,4 @@
-sqlite\_database.models.mixin module
+luminadb.models.mixin module
 ====================================
 
 .. automodule:: luminadb.models.mixin

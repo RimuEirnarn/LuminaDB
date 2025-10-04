@@ -1,4 +1,4 @@
-sqlite\_database.model.helpers module
+luminadb.model.helpers module
 =====================================
 
 .. automodule:: luminadb.model.helpers

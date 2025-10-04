@@ -1,4 +1,4 @@
-sqlite\_database.locals module
+luminadb.locals module
 ==============================
 
 .. automodule:: luminadb.locals

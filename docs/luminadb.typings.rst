@@ -1,4 +1,4 @@
-sqlite\_database.typings module
+luminadb.typings module
 ===============================
 
 .. automodule:: luminadb.typings

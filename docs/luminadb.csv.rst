@@ -1,4 +1,4 @@
-sqlite\_database.csv module
+luminadb.csv module
 ===========================
 
 .. automodule:: luminadb.csv

@@ -1,4 +1,4 @@
-sqlite\_database.column module
+luminadb.column module
 ==============================
 
 .. automodule:: luminadb.column
