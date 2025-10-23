@@ -28,7 +28,7 @@
 **LuminaDB** (previously known as SQLite Database) is a lightweight, developer-friendly wrapper for SQLite designed to feel as intuitive as Laravel's Eloquent ORM, but in Python.
 
 > [!WARNING]
-> ⚠️ This library is still pre-1.0, which means it's not optimized for high performance or low memory usage (yet). Use with care. If you run into serious issues, feel free to open an issue—we’re listening.
+> ⚠️ This library is still pre-1.0, which means it's not optimized for high performance or low memory usage (yet). Use with care. If you run into serious issues, feel free to open an issue, we’re listening.
 
 ---
 
