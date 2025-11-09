@@ -1,4 +1,4 @@
-API Documentation (luminadb)
+API Documentation (LuminaDB)
 ========================
 
 Subpackages

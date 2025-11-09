@@ -7,7 +7,7 @@ from enum import StrEnum
 
 import luminadb
 from .errors import ValidationError
-from ..column import BuilderColumn, text, integer, blob, boolean
+from ..column import BuilderColumn, text, integer, blob, boolean, real
 
 TypeFunction: TypeAlias = Callable[[str], BuilderColumn]
 Model = TypeVar("Model", bound="luminadb.BaseModel")
@@ -20,6 +20,7 @@ TYPES: dict[Type[Any], TypeFunction] = (
         str: text,
         bytes: blob,
         bool: boolean,
+        float: real
     }
 )
 
