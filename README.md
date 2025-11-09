@@ -25,10 +25,10 @@
 
 </div>
 
-**LuminaDB** (previously known as SQLite Database) is a lightweight, developer-friendly wrapper for SQLite—designed to feel as intuitive as Laravel's Eloquent ORM, but in Python.
+**LuminaDB** (previously known as SQLite Database) is a lightweight, developer-friendly wrapper for SQLite designed to feel as intuitive as Laravel's Eloquent ORM, but in Python.
 
 > [!WARNING]
-> ⚠️ This library is still pre-1.0, which means it's not optimized for high performance or low memory usage (yet). Use with care. If you run into serious issues, feel free to open an issue—we’re listening.
+> ⚠️ This library is still pre-1.0, which means it's not optimized for high performance or low memory usage (yet). Use with care. If you run into serious issues, feel free to open an issue, we’re listening.
 
 ---
 
@@ -59,8 +59,8 @@ pip install https://github.com/RimuEirnarn/LuminaDB/archive/refs/tags/<latest-ve
 
 A quick feature overview is available in [Features.md](https://github.com/RimuEirnarn/LuminaDB/blob/main/docs/SimpleGuide.md)
 
-Or check out the full short docs at:  
-📚 [luminadb.rtfd.io](https://luminadb.rtfd.io/)
+Or check out the full short docs at:
+[luminadb.rtfd.io](https://luminadb.rtfd.io/)
 
 ---
 
@@ -69,7 +69,7 @@ Or check out the full short docs at:
 Wondering why this exists?  
 Read the [History.md](History.md) to learn what led to the birth of this project.
 
-> Pre-contributor: just ChatGPT—so blame the AI if anything’s weird.
+> Pre-contributor: just ChatGPT, so blame the AI if anything’s weird.
 
 ---
 
@@ -78,7 +78,7 @@ Read the [History.md](History.md) to learn what led to the birth of this project
 Found a bug? Got an idea? Want to improve something?
 
 - Open an issue for anything noteworthy.
-- PRs are welcome—as long as they align with the project's vision and design goals.
+- PRs are welcome as long as they align with the project's vision and design goals.
 
 ---
 
@@ -124,5 +124,9 @@ This project is licensed under the **BSD 3-Clause "New" or "Revised" License**.
 
 Read the full license here:  
 [LICENSE](https://github.com/RimuEirnarn/LuminaDB/blob/main/LICENSE)
+
+## Short note
+
+Either you can call this project: Library, ORM, ORM-lite, or driver is up to you. This is a high-level abstraction built on top of standard sqlite3.
 
 ---
