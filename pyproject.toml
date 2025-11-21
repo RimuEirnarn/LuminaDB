@@ -25,7 +25,7 @@ Repository = "https://github.com/RimuEirnarn/luminadb.git"
 
 [tool.setuptools]
 zip-safe = true
-packages = ["luminadb", "luminadb.models", "luminadb.workers"]
+packages = ["luminadb", "luminadb.models"]
 
 [project.optional-dependencies]
 dev = ["pytest", "pylint", "black"]

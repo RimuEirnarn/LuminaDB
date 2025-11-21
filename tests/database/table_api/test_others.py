@@ -5,7 +5,7 @@ from random import randint
 
 from pytest import raises
 from luminadb import Database, integer, text
-from luminadb.workers import DatabaseWorker
+# from luminadb.workers import DatabaseWorker
 from luminadb.index import Index
 
 from ..setup import setup_database_fns, setup_database, count
@@ -69,15 +69,15 @@ def test_vacuum():
 
 
 # @mark.skipif(sys.version_info < (3, 13), reason="Worker feature is exclusive in 3.13")
-def test_worker():
-    """Test worker"""
+# def test_worker():
+#     """Test worker"""
 
-    db = DatabaseWorker(":memory:")
-    t = db.create_table("t", [integer("a")])
-    t.insert({"a": 1})
-    t.commit()
-    assert t.select_one({"a": 1}) is not None
-    db.close()
+#     db = DatabaseWorker(":memory:")
+#     t = db.create_table("t", [integer("a")])
+#     t.insert({"a": 1})
+#     t.commit()
+#     assert t.select_one({"a": 1}) is not None
+#     db.close()
 
 
 def test_index():
