@@ -4,7 +4,7 @@ from typing import Optional, Any
 
 from ..typings import Orders, Data
 from ..functions import ParsedFn, _function_extract
-from ..utils import check_one, check_iter, Null
+from ..utils import check_one, check_iter, SKIP
 from ..locals import _SQLITETYPES
 
 from .typings import Condition, CacheOrders, CacheData
@@ -82,14 +82,14 @@ def parse_orders(order: CacheOrders):
 
 
 def remove_null(condition: dict[str, Any]) -> dict[str, Any]:
-    """Remove Null from current Data"""
+    """Remove SKIP from current Data"""
     new = condition.copy()
     for key, value in condition.items():
-        if value is Null:
+        if value is SKIP:
             del new[key]
     if not new:
         raise ValueError(
-            "After removing Null sentinel value, new data that would be inserted"
+            "After removing SKIP sentinel value, new data that would be inserted"
             "/updated returns empty dictionary."
         )
     return new

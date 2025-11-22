@@ -3,7 +3,7 @@
 from . import models
 from .models import BaseModel, model, Foreign, Primary, Unique, hook, validate
 from .database import Database
-from .utils import Row, Null
+from .utils import Row, SKIP
 from .column import Column, text, integer, blob, real
 from .signature import op
 from .operators import this
@@ -15,14 +15,14 @@ def test_installed():
     return True
 
 
-__version__ = "0.7.14"
+__version__ = "0.8.0"
 __all__ = [
     "Database",
     "Table",
     "this",
     "op",
     "Column",
-    "Null",
+    "SKIP",
     "Row",
     "text",
     "integer",

@@ -159,7 +159,7 @@ Here’s a small CLI app to tie it all together:
 ```py
 from enum import IntEnum
 from uuid import uuid4
-from luminadb import Database, model, BaseModel, Primary, Null
+from luminadb import Database, model, BaseModel, Primary, SKIP
 
 db = Database(":memory:")
 
@@ -184,7 +184,7 @@ def read(prompt: str):
     try:
         return input(prompt)
     except KeyboardInterrupt:
-        return Null
+        return SKIP
 
 def create():
     title = input("Title: ")

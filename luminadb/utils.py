@@ -176,8 +176,8 @@ class Sentinel:  # pylint: disable=too-few-public-methods
     """A Sentinel value, has unique behavior for Table API and Model API.
 
     Pre-defined value:
-        - Null, use this one if you're unsure if the data you pulled exists or not.
-            The query builder will remove it if it detects Null sentinel."""
+        - SKIP, use this one if you're unsure if the data you pulled exists or not.
+            The query builder will remove it if it detects SKIP sentinel."""
 
     def __repr__(self) -> str:
         return "<Sentinel>"
@@ -291,7 +291,7 @@ def generate_ids():
 
 
 null = NullObject()
-Null = Sentinel()
+SKIP = Sentinel()
 AttrDict = Row
 Query: TypeAlias = Row[Any]
 SquashedQueries: TypeAlias = Row[list[Any]]
@@ -311,7 +311,7 @@ def crunch(query: Queries | list[dict[str, Any]]) -> Row[list[Any]]:
 
 __all__ = [
     "null",
-    "Null",
+    "SKIP",
     "WithCursor",
     "check_iter",
     "check_one",

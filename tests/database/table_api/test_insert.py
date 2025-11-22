@@ -1,7 +1,7 @@
 """Table API insertion tests"""
 
 from pytest import raises
-from luminadb import Database, text, Null
+from luminadb import Database, text, SKIP
 from luminadb.errors import CuteDemonLordException
 
 from ..setup import groups, users, database, save_report, GROUP_NEW, USER_NEW
@@ -35,4 +35,4 @@ def test_insert_empty():
     db = Database(":memory:")
     table = db.create_table("a", [text("name")])
     with raises(ValueError):
-        table.insert({"name": Null})
+        table.insert({"name": SKIP})
