@@ -13,7 +13,8 @@ class TableCreationExtractor:
     """Base processor for table creation"""
 
     def __init__(self, columns: Iterable[Column], type_mappings: dict[str, str] | None):
-        self.columns = columns
+        # Ensure we have a concrete sequence — callers may pass a generator
+        self.columns = list(columns)
         self.type_mappings = _get_type_mappings(type_mappings)
         self.primaries: list[Column] = []
         self.foreigns: list[Column] = []
@@ -21,8 +22,14 @@ class TableCreationExtractor:
 
     def process_columns(self):
         """Process each columns"""
+        primary_count = sum(1 for col in self.columns if col.primary)
         self.string = _iterate_etbc_step1(
-            self.columns, self.string, self.primaries, self.foreigns, self.type_mappings
+            self.columns,
+            self.string,
+            self.primaries,
+            self.foreigns,
+            self.type_mappings,
+            primary_count,
         )
 
     def add_primary_keys(self):
@@ -75,20 +82,33 @@ def _iterate_etbc_step1(
     primaries: list[Column],
     foreigns: list[Column],
     maps: dict[str, str],
+    primary_count: int,
 ):
     for column in columns:
         ctype = maps.get(column.type, column.type)
-        string += _process_column_constraints(column, ctype)
+        string += _process_column_constraints(column, ctype, primary_count)
         if column.raw_source:
             foreigns.append(column)
+        # If there is exactly one primary in the table we emitted an inline
+        # PRIMARY KEY for that column already. Avoid adding it to the
+        # table-level primaries list to prevent duplicate primary key
+        # constraints.
         if column.primary:
-            primaries.append(column)
+            if not primary_count == 1:
+                primaries.append(column)
         string += ","
     return string
 
 
-def _process_column_constraints(column: Column, ctype: str) -> str:
-    """Process constraints for a single column."""
+def _process_column_constraints(column: Column, ctype: str, primary_count: int) -> str:
+    """Process constraints for a single column.
+
+    If there is exactly one primary key in the table, emit an inline
+    ``PRIMARY KEY`` for that column. If that column also has
+    ``auto_increment`` enabled, emit ``AUTOINCREMENT`` (SQLite syntax).
+    For multi-column primary keys, the table-level primary key constraint
+    will be added separately by `add_primary_keys`.
+    """
     constraints = f" {column.name} {ctype}"
     if not column.nullable:
         constraints += " not null"
@@ -96,6 +116,10 @@ def _process_column_constraints(column: Column, ctype: str) -> str:
         constraints += " unique"
     if column.default:
         constraints += f" default {repr(column.default)}"
+    if column.primary and primary_count == 1:
+        constraints += " primary key"
+        if column.auto_increment:
+            constraints += " autoincrement"
     return constraints
 
 def extract_single_column(column: Column):
@@ -184,30 +208,49 @@ def extract_table(  # pylint: disable=too-many-locals
     # although, can SOMEONE have a million columns on a sqlite table?
     # So, the efficiency on this blob isn't a concern.
     for column_string in filtered.split(","):
+        # Tokenize this column constraint once
         column_shlexed = list(shlex(column_string))
         for tindex, token in enumerate(column_shlexed):
-            if token.lower() == "primary":
+            tl = token.lower()
+            if tl == "primary":
+                # Found a table-level primary key clause. Extract the wrapped list
                 next_ = tindex + 2
                 str_wrap = "".join(column_shlexed[next_ : next_ + 2])
-                if str_wrap.startswith(":wrap"):
-                    wrap = paren_wrap[str_wrap]
-                else:
-                    wrap = str_wrap
-                for name in (
+                wrap = paren_wrap[str_wrap] if str_wrap.startswith(":wrap") else str_wrap
+                # parse column names from the wrap (handles parentheses)
+                names = (
                     wrap[1:-1].split(",") if wrap.startswith("(") else wrap.split(",")
-                ):
-                    upheld[name][4] = True
-                continue
-            if token.lower() == "foreign":
+                )
+
+                # If any columns already have inline primary definitions, prefer
+                # those and skip applying the table-level constraint. If the
+                # table-level clause references a different set of columns than
+                # the inline definitions, raise an error to surface the
+                # inconsistency.
+                inline_primaries = {n for n, v in upheld.items() if v[4]}
+                table_level = {
+                    name[1:-1] if (name.startswith("'") or name.startswith('"')) else name
+                    for name in names
+                }
+                if inline_primaries:
+                    if inline_primaries != table_level:
+                        raise ValueError(
+                            "Conflicting primary key definitions: inline and table-level differ"
+                        )
+                    # otherwise they match — nothing to do
+                    break
+
+                # No inline primaries present; apply table-level primary markers
+                for name in names:
+                    key = name[1:-1] if name.startswith("'") or name.startswith('"') else name
+                    upheld[key][4] = True
+                break
+
+            if tl == "foreign":
                 next_ = tindex + 2
                 str_wrap = "".join(column_shlexed[next_ : next_ + 2])
-                if str_wrap.startswith(":wrap"):
-                    wrap = paren_wrap[str_wrap]
-                else:
-                    wrap = str_wrap
-                name = (
-                    wrap[1:-1] if wrap.startswith("'") or wrap.startswith('"') else wrap
-                )
+                wrap = paren_wrap[str_wrap] if str_wrap.startswith(":wrap") else str_wrap
+                name = wrap[1:-1] if wrap.startswith("'") or wrap.startswith('"') else wrap
                 name = wrap[1:-1] if wrap.startswith("(") else wrap
                 tb_index = next_ + 3
                 tb_col = tb_index + 1
