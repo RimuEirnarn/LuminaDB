@@ -124,7 +124,6 @@ class Primary(Constraint):
         """Apply this constraint as primary"""
         type_.primary()
 
-
 class Validators:
     """Base class to hold validators"""
 

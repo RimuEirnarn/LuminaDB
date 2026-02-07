@@ -22,7 +22,13 @@ from .helpers import (
     SETNULL,
 )
 
-from .helpers import VALID_HOOKS_NAME, hook, validate, initiate_hook, initiate_validators
+from .helpers import (
+    VALID_HOOKS_NAME,
+    hook,
+    validate,
+    initiate_hook,
+    initiate_validators,
+)
 from .query_builder import QueryBuilder
 from .errors import ConstraintError
 from ..errors import DatabaseExistsError
@@ -137,7 +143,9 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
 
             fields_ = tuple((field.name for field in fields(cls)))
             if name not in fields_:
-                raise ValueError(f"Expected validator to has name as column field. Got {name!r}")
+                raise ValueError(
+                    f"Expected validator to has name as column field. Got {name!r}"
+                )
 
             fail = if_fail or f"{name} fails certain validator"
 
@@ -378,6 +386,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         """Return Query Builder related to this model"""
         return QueryBuilder(cls)
 
+
 def model(db: Database, type_checking: bool = False):
     """Initiate Model API compatible classes. Requires target to be a dataclass,
     the app automatically injects dataclass if this isn't a dataclass.
@@ -415,5 +424,5 @@ __all__ = [
     "SETNULL",
     "RESTRICT",
     "validate",
-    "hook"
+    "hook",
 ]
