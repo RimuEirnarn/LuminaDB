@@ -198,7 +198,6 @@ def validate(fn_or_column, reason=None):
     """Register a validator"""
 
     def decorator(func: Callable):
-        print(func, fn_or_column)
         fn = staticmethod(func)
         name = func.__name__
         inferred_col = (
