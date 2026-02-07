@@ -262,3 +262,17 @@ def test_model_api_custom_id():
         username: str
 
     assert Users.create(uid="1", username='admin')
+
+def test_model_api_auto_increment():
+    """Test Model API Auto Increment"""
+
+    db = Database(":memory:")
+
+    @model(db)
+    class Users(BaseModel):
+        __schema__ = (Primary('id', auto=True),)
+        __auto_id__ = lambda: 1
+        id: int
+        username: str
+
+    assert Users.create(username='admin')

@@ -72,6 +72,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         }  # pylint: disable=no-member
         cls.__table_name__ = cls.__table_name__ or cls.__name__.lower()
         _primary = None
+        _primary_auto = False
 
         # Extract constraints from __schema__
         for constraint in cls.__schema__:  # pylint: disable=no-member
@@ -81,6 +82,11 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
                 raise ConstraintError("Cannot apply when a column has 2 primary keys")
             if isinstance(constraint, Primary):
                 _primary = target_col
+                # remember if primary has auto-increment enabled
+                try:
+                    _primary_auto = constraint.auto  # type: ignore
+                except TypeError:
+                    _primary_auto = False
                 continue
 
         # Process fields & constraints
@@ -101,6 +107,9 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
             columns.append(col)
 
         cls._primary = _primary
+        # Remember whether primary requested auto-increment so create()
+        # can handle instantiation and post-insert assignment accordingly.
+        cls._primary_auto = bool(_primary_auto)
         try:
             cls._tbl = db.create_table(cls.__table_name__, columns)
         except DatabaseExistsError:
@@ -164,14 +173,39 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         """Create data based on kwargs"""
         primary: str | None = cls._primary or kwargs.get("id", None)
         id_present = bool(kwargs.get(cls._primary or "id", None))
-        if primary and cls.__auto_id__ and not id_present:  # type: ignore
-            kwargs[primary] = cls.__auto_id__()  # type: ignore
+
+        # If primary is auto-incremented by DB, do not call model-level
+        # __auto_id__. Instead, instantiate with a temporary None for the
+        # primary so dataclass __init__ accepts it, then perform the insert
+        # and set the real id on the instance from the DB's lastrowid.
+        use_db_autoinc = bool(primary and getattr(cls, "_primary_auto", False) and not id_present)
+
+        if use_db_autoinc:
+            kwargs[primary] = None  # type: ignore # allow dataclass instantiation
+        else:
+            if primary and cls.__auto_id__ and not id_present:  # type: ignore
+                kwargs[primary] = cls.__auto_id__()  # type: ignore
+
         instance = cls(**kwargs)
 
         cls._execute_hooks("before_create", instance)
         for key in kwargs:
+            # Below is a naive changes
+            # When validating input, it skips primary key if it detects SQL is going to handle it internally.
+            # If it's "enough," no changes should be made.
+            # But I don't believe it.
+            if key == primary and use_db_autoinc:
+                continue
             cls._execute_validators(key, instance)
-        cls._tbl.insert(kwargs)
+
+        lastrow = cls._tbl.insert(kwargs)
+        if use_db_autoinc:
+            # Assign generated id back to instance attribute
+            try:
+                setattr(instance, primary, lastrow) # type: ignore
+            except (TypeError, AttributeError):
+                pass
+
         cls._execute_hooks("after_create", instance)
         return instance
 

@@ -118,11 +118,27 @@ class Foreign(Constraint):
 
 
 class Primary(Constraint):
-    """Primary constraint"""
+    """Primary constraint
+
+    Accepts optional `auto` flag to enable auto-increment on integer
+    primary columns when using the BuilderColumn API.
+    """
+
+    def __init__(self, column: str, auto: bool = False) -> None:
+        super().__init__(column)
+        self._auto = bool(auto)
+
+    @property
+    def auto(self) -> bool:
+        return self._auto
 
     def apply(self, type_: BuilderColumn):
-        """Apply this constraint as primary"""
+        """Apply this constraint as primary. If `auto` was requested,
+        enable auto increment on the builder column as well.
+        """
         type_.primary()
+        if self._auto:
+            type_.auto_increment()
 
 class Validators:
     """Base class to hold validators"""
@@ -181,7 +197,6 @@ def validate(fn_or_column, reason=None):
     """Register a validator"""
 
     def decorator(func: Callable):
-        print(func, fn_or_column)
         fn = staticmethod(func)
         name = func.__name__
         inferred_col = (

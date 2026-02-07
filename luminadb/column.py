@@ -26,6 +26,7 @@ class Column:  # pylint: disable=too-many-instance-attributes
         default: Any = None,
         on_delete: SQLACTION = "cascade",
         on_update: SQLACTION = "cascade",
+        auto_increment: bool = False,
     ) -> None:
         self._name = check_one(name)
         self._type = check_one(type)
@@ -52,6 +53,10 @@ class Column:  # pylint: disable=too-many-instance-attributes
         self._update = on_update
         self._delete = on_delete
         self._is_primary = primary
+        # Auto increment must only be enabled on integer types
+        self._auto_increment = bool(auto_increment)
+        if self._auto_increment and self._type != "integer":
+            raise ValueError("Auto increment is only available for INTEGER type")
 
     @property
     def name(self):
@@ -117,6 +122,11 @@ class Column:  # pylint: disable=too-many-instance-attributes
         """Type"""
         return self._type
 
+    @property
+    def auto_increment(self):
+        """Auto increment enabled?"""
+        return self._auto_increment
+
     def __repr__(self) -> str:
         return f"<{self.type.title()}{type(self).__name__} -> {self.name}>"
 
@@ -131,6 +141,7 @@ class Column:  # pylint: disable=too-many-instance-attributes
             __o.default,
             __o.primary,
             __o.raw_source,
+            __o.auto_increment,
             __o.on_delete,
             __o.on_update,
         )
@@ -142,6 +153,7 @@ class Column:  # pylint: disable=too-many-instance-attributes
             self.default,
             self.primary,
             self.raw_source,
+            self.auto_increment,
             self.on_delete,
             self.on_update,
         )
@@ -158,6 +170,7 @@ class Column:  # pylint: disable=too-many-instance-attributes
             "foreign_ref": self.raw_source,
             "nullable": self.nullable,
             "default": self.default,
+            "auto_increment": self.auto_increment,
             "on_delete": self.on_delete,
             "on_update": self.on_update
         })
@@ -177,6 +190,7 @@ class BuilderColumn:  # pylint: disable=too-many-instance-attributes
         self._default = None
         self._nullable = False
         self._unique = False
+        self._auto = False
         self._type: str | None = None  # type: ignore
         self._name = ""
         self._source = ""
@@ -203,12 +217,20 @@ class BuilderColumn:  # pylint: disable=too-many-instance-attributes
         self._check_then_define()
         if not self._types:
             self._type = name
+            if self._auto and name != "integer":
+                self._has_defined_type = False
+                self._type = None
+                raise TypeError("Auto increment is only available for integer type")
             return self._set_name
         if name not in self._types:
             self._has_defined_type = False
             self._type = None
             raise TypeError(f"{name} was not defined.")
         self._type = name
+        if self._auto and name != "integer":
+            self._has_defined_type = False
+            self._type = None
+            raise TypeError("Auto increment is only available for integer type")
         return self._set_name
 
     def default(self, default_value: Any):
@@ -216,6 +238,14 @@ class BuilderColumn:  # pylint: disable=too-many-instance-attributes
         if not default_value:
             self._nullable = True
         self._default = default_value
+        return self
+
+    def auto_increment(self) -> Self:
+        """Enable auto increment for this column (only for integer)."""
+        self._auto = True
+        if self._has_defined_type and self._type != "integer":
+            self._auto = False
+            raise ValueError("Auto increment is only available for integer type")
         return self
 
     def primary(self) -> Self:
@@ -260,6 +290,8 @@ class BuilderColumn:  # pylint: disable=too-many-instance-attributes
         if self._foreign:
             if not self._source or self._source_column:
                 raise ValueError("One of foreign ref must present")
+        if self._auto and self._type != "integer":
+            raise ValueError("Auto increment is only available for integer type")
         if not self._nullable and self._default is null:
             raise ValueError("Cannot set from not null while default is null")
 
@@ -278,6 +310,7 @@ class BuilderColumn:  # pylint: disable=too-many-instance-attributes
             self._default,
             self._delete,
             self._update,
+            auto_increment=self._auto,
         )
 
     def __eq__(self, __o: "Column") -> bool:  # type: ignore
