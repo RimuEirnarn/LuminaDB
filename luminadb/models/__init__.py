@@ -182,7 +182,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
 
         cls._execute_hooks("before_create", instance)
         for key in kwargs:
-            if key == primary and use_db_autoinc:
+            if key == primary and use_db_autoinc: # This is a naive changes.
                 continue
             cls._execute_validators(key, instance)
 
