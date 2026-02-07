@@ -191,7 +191,8 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         cls._execute_hooks("before_create", instance)
         for key in kwargs:
             # Below is a naive changes
-            # When validating input, it skips primary key if it detects SQL is going to handle it internally.
+            # When validating input, it skips primary key if it
+            # ... detects SQL is going to handle it internally.
             # If it's "enough," no changes should be made.
             # But I don't believe it.
             if key == primary and use_db_autoinc:

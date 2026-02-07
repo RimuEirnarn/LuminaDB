@@ -130,6 +130,7 @@ class Primary(Constraint):
 
     @property
     def auto(self) -> bool:
+        """Auto increment"""
         return self._auto
 
     def apply(self, type_: BuilderColumn):
