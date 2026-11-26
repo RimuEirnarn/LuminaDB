@@ -1,0 +1,135 @@
+name: Bug Report
+description: Report unexpected behavior or defects in LuminaDB.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+type: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug in LuminaDB!
+
+        Before submitting, please check whether an existing issue already
+        describes the same problem.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: |
+        Provide a clear and concise description of the problem.
+        Include the affected functionality or API, if known.
+      placeholder: Describe what went wrong...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        Provide a minimal sequence of steps or a code example
+        that consistently reproduces the issue.
+      placeholder: |
+        1. Create a database connection...
+        2. Define a table...
+        3. Execute the following operation...
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect LuminaDB to do?
+      placeholder: Describe the expected behavior...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What happened instead?
+      placeholder: Describe the actual behavior...
+    validations:
+      required: true
+
+  - type: textarea
+    id: minimal-example
+    attributes:
+      label: Minimal Reproducible Example
+      description: |
+        If possible, provide a standalone Python snippet that
+        demonstrates the issue. Remove unrelated code and sensitive data.
+      render: python
+      placeholder: |
+        from luminadb import ...
+
+        # Minimal example
+    validations:
+      required: false
+
+  - type: input
+    id: luminadb-version
+    attributes:
+      label: LuminaDB Version
+      description: Which version of LuminaDB are you using?
+      placeholder: "e.g. 1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: Which Python version are you running?
+      placeholder: "e.g. 3.11.9"
+    validations:
+      required: true
+
+  - type: input
+    id: sqlite-version
+    attributes:
+      label: SQLite Version
+      description: Which SQLite version is being used?
+      placeholder: "e.g. 3.45.1"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Operating System
+      description: Which operating system are you using?
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - Android
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Traceback / Error Output
+      description: |
+        Include any relevant exception traceback or terminal output.
+        Please redact sensitive information.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: |
+        Include any other information that might help investigate
+        the issue, such as workarounds or related functionality.
+      placeholder: Additional information...
+    validations:
+      required: false
