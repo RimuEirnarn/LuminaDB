@@ -374,16 +374,15 @@ class Table: # pylint: disable=too-many-instance-attributes
         just_a_column = (isinstance(what, tuple) and len(what) == 1) or (
             isinstance(what, str) and what != "*"
         )
-        with self._sql:
-            cursor = self._exec(query, data)
-            data = cursor.fetchall()
-            if just_a_column:
-                return [d[what] for d in data]
-            if flatten:
-                return crunch(data)
-            if isinstance(what, ParsedFn):
-                return data[0][what.parse_sql()[0]]
-            return data
+        cursor = self._exec(query, data)
+        data = cursor.fetchall()
+        if just_a_column:
+            return [d[what] for d in data]
+        if flatten:
+            return crunch(data)
+        if isinstance(what, ParsedFn):
+            return data[0][what.parse_sql()[0]]
+        return data
 
     @overload
     def paginate_select(
@@ -459,18 +458,17 @@ class Table: # pylint: disable=too-many-instance-attributes
             query, data = build_select(
                 self._table, where, what, length, start, order
             )  # type: ignore
-            with self._sql:
-                cursor = self._exec(query, data)
-                fetched = cursor.fetchmany(length)
-                if len(fetched) == 0:
-                    return
-                if flatten and not just_a_column:
-                    fetched = crunch(fetched)
-                if len(fetched) != length:
-                    yield fetched
-                    return
+            cursor = self._exec(query, data)
+            fetched = cursor.fetchmany(length)
+            if len(fetched) == 0:
+                return
+            if flatten and not just_a_column:
+                fetched = crunch(fetched)
+            if len(fetched) != length:
                 yield fetched
-                start += length
+                return
+            yield fetched
+            start += length
 
     @overload
     def select_one(
@@ -520,19 +518,18 @@ class Table: # pylint: disable=too-many-instance-attributes
         query, data = build_select(
             self._table, where, what, 1, 0, order
         )  # type: ignore
-        with self._sql:
-            cursor = self._exec(query, data)
-            returned = cursor.fetchone()
-            if isinstance(what, ParsedFn):
-                print(returned)
-                return returned[what.parse_sql()[0]]
-            if not returned:
-                return Row()
-            if isinstance(what, tuple) and len(what) == 1:
-                return returned[what]
-            if isinstance(what, str) and what != "*":
-                return returned[what]
-            return returned
+        cursor = self._exec(query, data)
+        returned = cursor.fetchone()
+        if isinstance(what, ParsedFn):
+            print(returned)
+            return returned[what.parse_sql()[0]]
+        if not returned:
+            return Row()
+        if isinstance(what, tuple) and len(what) == 1:
+            return returned[what]
+        if isinstance(what, str) and what != "*":
+            return returned[what]
+        return returned
 
     def columns(self):
         """Table columns"""
