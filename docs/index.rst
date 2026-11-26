@@ -4,24 +4,27 @@
    contain the root `toctree` directive.
 
 LuminaDB Documentation
-=============================
+======================
+
+LuminaDB is a lightweight, easy-to-use wrapper around Python's ``sqlite3``. It offers a
+dictionary-driven **Table API** and a class-based **Model API**.
 
 .. toctree::
-    :maxdepth: 12
+    :maxdepth: 2
+    :caption: Guides
 
-    :caption: LuminaDB
-
+    QuickStart
     SimpleGuide
     ModelAPI
     DatabaseModes
+    Troubleshooting
 
 
 API Documentation
-=============================
+=================
 
 .. toctree::
     :maxdepth: 1
-
     :caption: API Documentation
 
     api_reference
@@ -33,4 +36,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

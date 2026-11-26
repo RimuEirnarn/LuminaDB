@@ -524,7 +524,6 @@ class Table: # pylint: disable=too-many-instance-attributes
             cursor = self._exec(query, data)
             returned = cursor.fetchone()
             if isinstance(what, ParsedFn):
-                print(returned)
                 return returned[what.parse_sql()[0]]
             if not returned:
                 return Row()
