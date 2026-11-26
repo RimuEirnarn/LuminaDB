@@ -11,7 +11,7 @@ from . import Database, Table
 def _export_table(table: Table) -> str:
     data = StringIO()
     tb_data = table.select_one()
-    if tb_data is None:
+    if not tb_data:
         return ""
     fields = tuple(tb_data.keys())
     csv_writer = DictWriter(data, fields)
