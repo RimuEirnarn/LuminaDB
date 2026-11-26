@@ -60,6 +60,12 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
     _tbl: Table
     _primary: str | None
 
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        cls.__hooks__ = {k: list(v) if isinstance(v, list) else v for k, v in cls.__hooks__.items()}
+        cls.__validators__ = dict(cls.__validators__)
+
+
     @classmethod
     def create_table(cls, db: Database):
         """Create table according to annotations and schema from `__schema__`"""
