@@ -249,7 +249,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
     def bulk_update(cls, records: list[dict], key: str | object = NULL):
         """Update multiple records using a primary key or provided key."""
         key_ = cls._primary or key
-        if key is NULL:
+        if key_ is NULL or not key_:
             raise ValueError(
                 "The table does not have any primary key, or key parameter is not provided"
             )
