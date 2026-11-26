@@ -68,9 +68,9 @@ def to_csv_file(table_or_database: Table | Database, file: str):
 
 def from_csv_string(table: Table, data: str):
     """Insert from CSV data"""
-    reader = DictReader(data)
-    for entry in reader:
-        table.insert(entry)
+    rows = list(DictReader(StringIO(data, newline="")))
+    if rows:
+        table.insert_many(rows)
 
 def from_csv_file(table: Table, data: str):
     """Insert from CSV file"""
