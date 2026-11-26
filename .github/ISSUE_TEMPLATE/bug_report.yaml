@@ -133,3 +133,14 @@ body:
       placeholder: Additional information...
     validations:
       required: false
+  
+  - type: upload
+    id: attachments
+    attributes:
+      label: Upload Attachments
+      description: |
+        Attach relevant screenshots, log files, or a minimal
+        reproduction project if applicable.
+    validations:
+      required: false
+      accept: ".png,.jpg,.log,.txt,.py,.zip"
