@@ -56,15 +56,16 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
     __validators__: dict[str, list[Validators]] = {}
     __hooks__: "dict[str, list[Callable[[Self], None] | str]]" = {}
     __hidden__: tuple[str, ...] = ()
-    __auto_id__: Callable[[], Any] = None # type: ignore
+    __auto_id__: Callable[[], Any] = None  # type: ignore
     _tbl: Table
     _primary: str | None
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        cls.__hooks__ = {k: list(v) if isinstance(v, list) else v for k, v in cls.__hooks__.items()}
+        cls.__hooks__ = {
+            k: list(v) if isinstance(v, list) else v for k, v in cls.__hooks__.items()
+        }
         cls.__validators__ = dict(cls.__validators__)
-
 
     @classmethod
     def create_table(cls, db: Database):
@@ -184,13 +185,15 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         # __auto_id__. Instead, instantiate with a temporary None for the
         # primary so dataclass __init__ accepts it, then perform the insert
         # and set the real id on the instance from the DB's lastrowid.
-        use_db_autoinc = bool(primary and getattr(cls, "_primary_auto", False) and not id_present)
+        use_db_autoinc = bool(
+            primary and getattr(cls, "_primary_auto", False) and not id_present
+        )
 
         if use_db_autoinc:
             kwargs[primary] = None  # type: ignore # allow dataclass instantiation
         else:
-            if primary and cls.__auto_id__ and not id_present:  # type: ignore
-                kwargs[primary] = cls.__auto_id__()  # type: ignore
+            if primary and cls.__auto_id__ and callable(cls.__auto_id__) and not id_present:  # type: ignore
+                kwargs[primary] = cls.__auto_id__()  # type: ignore # pylint: disable=not-callable
 
         instance = cls(**kwargs)
 
@@ -209,7 +212,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         if use_db_autoinc:
             # Assign generated id back to instance attribute
             try:
-                setattr(instance, primary, lastrow) # type: ignore
+                setattr(instance, primary, lastrow)  # type: ignore
             except (TypeError, AttributeError):
                 pass
 
@@ -257,12 +260,17 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
     def bulk_create(cls, records: list[dict]):
         """Insert multiple records at once."""
         pk = cls._primary
-        prepared = []                   # (record, instance, db_generates_id)
+        prepared = []  # (record, instance, db_generates_id)
         for rec in records:
             rec = dict(rec)
-            db_id = bool(pk and getattr(cls, "_primary_auto", False) and not rec.get(pk))
-            if pk and not db_id and not rec.get(pk) and cls.__auto_id__ is not None: # type: ignore
-                rec[pk] = cls.__auto_id__() # type: ignore
+            db_id = bool(
+                pk and getattr(cls, "_primary_auto", False) and not rec.get(pk)
+            )
+            if pk and \
+                not db_id and \
+                not rec.get(pk) and \
+                cls.__auto_id__ is not None and callable(cls.__auto_id__):  # type: ignore
+                rec[pk] = cls.__auto_id__()  # type: ignore # pylint: disable=not-callable
             inst = cls(**({**rec, pk: None} if db_id else rec))
             cls._execute_hooks("before_create", inst)
             for key in rec:
@@ -274,7 +282,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         ids = cls._tbl.insert_each([r for r, _, _ in prepared])
         for (_, inst, db_id), rowid in zip(prepared, ids):
             if db_id:
-                setattr(inst, pk, rowid) # type: ignore
+                setattr(inst, pk, rowid)  # type: ignore
             cls._execute_hooks("after_create", inst)
         return [inst for _, inst, _ in prepared]
 
@@ -403,7 +411,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
             )
 
         # Perform the actual query
-        return related.where(**{foreign_key: getattr(self, self._primary)}).fetch() # type: ignore
+        return related.where(**{foreign_key: getattr(self, self._primary)}).fetch()  # type: ignore
 
     def belongs_to(self, related_model: "Type[T]"):
         """Retrieve the related model that this instance belongs to."""
@@ -431,7 +439,9 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
                 and constraint.target == f"{self.__table_name__}/{self._primary}"
             ):
                 foreign_key = constraint.column
-                return related_model.where(**{foreign_key: getattr(self, self._primary)}).fetch_one() # type: ignore
+                return related_model.where(
+                    **{foreign_key: getattr(self, self._primary)} # type: ignore
+                ).fetch_one()
 
         raise ValueError(
             f"{related_model.__name__} does not have a one-to-one relationship "
