@@ -247,6 +247,10 @@ class Table: # pylint: disable=too-many-instance-attributes
             datas (Iterable[Data]): Data to be inserted.
         """
         self._control()
+        keys = datas[0].keys()
+        for i, d in enumerate(datas):
+            if d.keys() != keys:
+                raise ValueError(f"record {i} has keys {sorted(d)} but record 0 has {sorted(keys)}")
         query, _ = build_insert(self._table, datas[0])  # type: ignore
         self._exec(query, datas, "executemany")
         if not self.in_transaction:
