@@ -7,6 +7,7 @@ from .errors import SecurityError
 from .locals import _NO_UNLIKE
 from .typings import tuple_list
 
+_INVERSE = {"=": "!=", "!=": "=", "<": ">=", "<=": ">", ">": "<=", ">=": "<"}
 
 class Signature:
     """Signature
@@ -83,8 +84,13 @@ class Signature:
 
     def negate(self):
         """Negate or adding NOT"""
+        if self._operator in _INVERSE:
+            # print(self._value)
+            return Signature(
+            self._value, _INVERSE[self._operator], self._data, self._negate  # type: ignore
+        )
         return Signature(
-            self._value, self._operator, tuple(self._data), not self._negate  # type: ignore
+            self._value, self._operator, self._data, not self._negate
         )
 
     @property
@@ -144,7 +150,7 @@ class Signature:
         return hash((self._value, self._data, self._negate, self._operator))
 
     def __repr__(self) -> str:
-        return f"<Signature -> {self._operator} {self._data!r}>"
+        return f"<Signature -> {self._operator} {self._data!r} | {self._value!r}>"
 
 
 op = Signature()
