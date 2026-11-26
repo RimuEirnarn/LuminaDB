@@ -1,5 +1,8 @@
 # Known Issues and Troubleshooting
 
+> NOTICE!
+> As per 26 November 2026, most of the issues described in this document were fixed and planned to update to v0.8.2
+
 This page lists problems found in **LuminaDB 0.8.1**, each with a workaround, followed by the error
 messages you are most likely to meet and what they mean. When an issue is fixed in a later release,
 delete its entry here.

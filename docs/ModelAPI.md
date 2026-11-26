@@ -6,27 +6,32 @@ have used Laravel's Eloquent, the method names will feel familiar (`create`, `fi
 It sits on top of the [Table API](SimpleGuide.md). Every model owns a `Table`, available through
 `Model.get_table()`, so you can drop down a level whenever the model layer is not enough.
 
-> **About the examples.** The examples in this guide were run against LuminaDB 0.8.1. A value after
+> **About the examples.** A value after
 > `# ->` is the real result, copied from that run. Blocks build on each other, so read them in order.
 
 ## Contents
 
-- [Your first model](#your-first-model)
-- [Fields and types](#fields-and-types)
-- [Schema constraints](#schema-constraints)
-- [Creating rows](#creating-rows)
-- [Reading rows](#reading-rows)
-- [The query builder](#the-query-builder)
-- [Updating and deleting](#updating-and-deleting)
-- [Auto-increment keys](#auto-increment-keys)
-- [Relationships](#relationships)
-- [Hooks, validators and type checking](#hooks-validators-and-type-checking)
-- [Hiding fields](#hiding-fields)
-- [Transactions](#transactions)
-- [Bulk operations and chunking](#bulk-operations-and-chunking)
-- [Scopes](#scopes)
-- [Escape hatches](#escape-hatches)
-- [Things to know](#things-to-know)
+- [Model API Guide](#model-api-guide)
+  - [Contents](#contents)
+  - [Your first model](#your-first-model)
+  - [Fields and types](#fields-and-types)
+  - [Schema constraints](#schema-constraints)
+  - [Creating rows](#creating-rows)
+  - [Reading rows](#reading-rows)
+  - [The query builder](#the-query-builder)
+  - [Updating and deleting](#updating-and-deleting)
+    - [Upsert](#upsert)
+  - [Auto-increment keys](#auto-increment-keys)
+  - [Relationships](#relationships)
+  - [Hooks, validators and type checking](#hooks-validators-and-type-checking)
+    - [Automatic type checking](#automatic-type-checking)
+  - [Hiding fields](#hiding-fields)
+  - [Transactions](#transactions)
+  - [Bulk operations and chunking](#bulk-operations-and-chunking)
+    - [Chunking](#chunking)
+  - [Scopes](#scopes)
+  - [Escape hatches](#escape-hatches)
+  - [Things to know](#things-to-know)
 
 ---
 
@@ -94,11 +99,6 @@ A few consequences of this design:
   and `False`). The instance returned by `create()` keeps the Python value you gave it.
 - **Other Python types are not converted.** A `list` or `dict` cannot be bound by `sqlite3`. Store
   JSON text yourself, and prefer ISO-8601 strings over `datetime` objects.
-
-> **Watch out: falsy defaults.** A default of `0`, `0.0`, `False` or `""` is *not* written to the
-> table. If you create a row without that field, the instance you get back shows the default, but the
-> stored value is `NULL`, and reading the row later gives `None`. Truthy defaults such as `18` or `True`
-> work normally. For now, pass falsy values explicitly: `Item.create(count=0)`.
 
 ---
 
@@ -319,11 +319,6 @@ The other `on_delete` actions behave as in SQLite: `SETNULL` sets the child's co
 the field a default of `None` so it can be loaded back), and `RESTRICT` refuses to delete a parent
 that still has children.
 
-> `has_many()` finds the link by comparing the child's foreign-key target with the parent's class name in
-> lowercase. If you set a custom `__table_name__` on the parent, `has_many()` will not find it. Use
-> `Child.where(user_id=parent.id).fetch()` instead. `has_one()` has a separate problem, listed in
-> [Known Issues](Troubleshooting.md).
-
 ---
 
 ## Hooks, validators and type checking
@@ -378,16 +373,6 @@ except ValidationError as exc:
 Hook and validator functions are plain functions that receive the instance (no `self`). Each event
 holds **one** hook, so a second `@hook` for the same event replaces the first. The same goes for
 validators on one field.
-
-> **Always declare `__hooks__ = {}` and `__validators__ = {}` on any model that uses `@hook`,
-> `@validate` or `type_checking=True`.** Without them, the hooks and validators are stored in a
-> dictionary shared by every model, and a validator written for one model will run when you create a
-> row in a completely different one. See [Known Issues](Troubleshooting.md).
-
-> **Validators on `update()` check the old values.** `instance.update(name="   ")` runs your validator
-> against the instance *before* the new value is applied, so the blank name is accepted, and the next
-> update then fails because of it. Until that is fixed, check new values yourself before calling
-> `update()`. Validators on `create()` work as expected.
 
 ### Automatic type checking
 
@@ -448,8 +433,6 @@ with User.atomic():
 User.exists(username="tx2")  # -> True
 ```
 
-Keep nesting shallow. See [Transactions](DatabaseModes.md#transactions) for the limits.
-
 ---
 
 ## Bulk operations and chunking
@@ -468,11 +451,8 @@ len(created)  # -> 7
 Note.count()  # -> 7
 ```
 
-- `bulk_create(records)` inserts a list of dicts in one statement and returns instances. It goes
-  straight to the table, so it does **not** generate ids with `__auto_id__`, and it skips hooks and
-  validators. Include every field, including the key.
-- `bulk_update(records, key="id")` updates one row per dict, matched on `key`. You must always pass
-  `key=`, even when the model has a primary key.
+- `bulk_create(records)` inserts a list of dicts in one statement and returns instances.
+- `bulk_update(records, key="id")` updates one row per dict, matched on `key` or existing and known primary key.
 - `bulk_delete(values, key)` deletes every row whose `key` column is in `values`.
 
 ```python
@@ -544,5 +524,3 @@ ann.raw("select count(*) as total from user", ()).fetchone()  # -> {'total': 5}
 - **Re-declaring an existing table attaches to it.** Running `@model(db)` for a table that already
   exists does not recreate it, which is what makes file-based databases work across runs.
 - **Create the `Database` once** and import it everywhere. Each `Database(...)` opens its own connection.
-- **Check [Known Issues](Troubleshooting.md)** before building on `has_one()`, hook/validator sharing,
-  or validators during `update()`.

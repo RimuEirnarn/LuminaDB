@@ -8,14 +8,19 @@ handles threads and shutdown, and how transactions work.
 
 ## Contents
 
-- [Opening a database](#opening-a-database)
-- [`strict` and `forgive`](#strict-and-forgive)
-- [Lifecycle](#lifecycle)
-- [Threads](#threads)
-- [Transactions](#transactions)
-- [Pragmas and maintenance](#pragmas-and-maintenance)
-- [Talking to SQLite directly](#talking-to-sqlite-directly)
-- [Debugging SQL](#debugging-sql)
+- [Database Options, Threading and Transactions](#database-options-threading-and-transactions)
+  - [Contents](#contents)
+  - [Opening a database](#opening-a-database)
+  - [`strict` and `forgive`](#strict-and-forgive)
+  - [Lifecycle](#lifecycle)
+  - [Threads](#threads)
+  - [Transactions](#transactions)
+    - [Grouping writes with `with`](#grouping-writes-with-with)
+    - [Nesting](#nesting)
+    - [Manual control](#manual-control)
+  - [Pragmas and maintenance](#pragmas-and-maintenance)
+  - [Talking to SQLite directly](#talking-to-sqlite-directly)
+  - [Debugging SQL](#debugging-sql)
 
 ---
 
@@ -33,8 +38,7 @@ db.path  # -> ':memory:'
 is passed to `sqlite3.connect`, so options such as `timeout=10` work as they do in the standard library.
 
 LuminaDB has a single `Database` class. Earlier versions of these docs described a `DatabaseWorker`
-class in a `luminadb.workers` module. That module does not exist in 0.8.1; see [Threads](#threads)
-for how to use a database from several threads.
+class in a `luminadb.workers` module. See [LuminaDB Worker](https://github.com/RimuEirnarn/LuminaDB_worker) repository.
 
 ---
 
@@ -176,18 +180,10 @@ with users:
             ...
 ```
 
-In 0.8.1, **nesting three or more levels deep raises `sqlite3.OperationalError: no such savepoint`**,
-and afterwards the internal depth counter is out of step, so later transactions in the same process fail
-too. Keep to one outer block and at most one inner block. See [Known Issues](Troubleshooting.md).
-
 ### Manual control
 
 `table.commit()` and `table.rollback()` (and the same on `db`) are there if you prefer to manage things
 yourself. Setting `table.auto_commit = False` stops the table from committing after every write.
-
-Be careful with this mode. In 0.8.1, calling `select()` on the table commits any pending writes, so a
-`rollback()` after a read has nothing left to undo, and `force_dirty = True` does not change that. If
-you need to undo writes, the `with table:` form is the reliable way.
 
 ---
 
