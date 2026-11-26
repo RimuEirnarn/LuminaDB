@@ -114,7 +114,7 @@ def _process_column_constraints(column: Column, ctype: str, primary_count: int) 
         constraints += " not null"
     if column.unique:
         constraints += " unique"
-    if column.default:
+    if column.default is not None:
         constraints += f" default {repr(column.default)}"
     if column.primary and primary_count == 1:
         constraints += " primary key"

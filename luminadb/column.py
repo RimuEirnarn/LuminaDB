@@ -235,7 +235,7 @@ class BuilderColumn:  # pylint: disable=too-many-instance-attributes
 
     def default(self, default_value: Any):
         """Set default value"""
-        if not default_value:
+        if default_value is None:
             self._nullable = True
         self._default = default_value
         return self
