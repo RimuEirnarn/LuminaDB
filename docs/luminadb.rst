@@ -1,5 +1,5 @@
 API Documentation (LuminaDB)
-========================
+============================
 
 Subpackages
 -----------
@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 12
 
    luminadb.models
-   luminadb.workers
 
 Submodules
 ----------
@@ -21,6 +20,7 @@ Submodules
    luminadb.database
    luminadb.errors
    luminadb.functions
+   luminadb.index
    luminadb.locals
    luminadb.operators
    luminadb.query_builder
