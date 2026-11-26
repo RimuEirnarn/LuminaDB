@@ -218,9 +218,17 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
             raise ValueError(
                 "The table does not have any primary key, cannot update due to undefined selection"
             )
-        self._execute_hooks("before_update", self)
-        for key in kwargs:
-            self._execute_validators(key, self)
+        old = {k: getattr(self, k) for k in kwargs}
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        try:
+            self._execute_hooks("before_update", self)
+            for key in kwargs:
+                self._execute_validators(key, self)
+        except Exception:
+            for k, v in old.items():
+                setattr(self, k, v)
+            raise
         self._tbl.update({primary: getattr(self, primary)}, kwargs)  # type: ignore
         for key, value in kwargs.items():
             setattr(self, key, value)
