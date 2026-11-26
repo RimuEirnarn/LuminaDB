@@ -259,7 +259,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
             prepared.append((rec, inst, db_id))
         ids = cls._tbl.insert_each([r for r, _, _ in prepared])
         for (_, inst, db_id), rowid in zip(prepared, ids):
-            if db_id and pk:
+            if db_id:
                 setattr(inst, pk, rowid) # type: ignore
             cls._execute_hooks("after_create", inst)
         return [inst for _, inst, _ in prepared]
