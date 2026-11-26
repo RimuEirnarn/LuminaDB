@@ -362,7 +362,6 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
 
     def has_many(self, related: "Type[T]", foreign_key: str | object = NULL):
         """Ensure related_model has a Foreign key pointing to self"""
-        foreign_key = None
 
         if not self._primary:
             raise ConstraintError(
@@ -374,18 +373,18 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         for constraint in related.__schema__:
             if isinstance(constraint, Foreign):
                 table_ref, _ = constraint.target.split("/")  # type: ignore
-                if table_ref == self.__class__.__name__.lower():
+                if table_ref == self.__table_name__.lower():
                     foreign_key = constraint.column
                     break
 
-        if not foreign_key:
+        if not foreign_key or foreign_key is NULL:
             raise ValueError(
                 f"{related.__name__} does not have a Foreign key pointing "
                 f"to {self.__class__.__name__}"
             )
 
         # Perform the actual query
-        return related.where(**{foreign_key: getattr(self, self._primary)}).fetch()
+        return related.where(**{foreign_key: getattr(self, self._primary)}).fetch() # type: ignore
 
     def belongs_to(self, related_model: "Type[T]"):
         """Retrieve the related model that this instance belongs to."""
