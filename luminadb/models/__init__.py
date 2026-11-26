@@ -56,7 +56,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
     __validators__: dict[str, list[Validators]] = {}
     __hooks__: "dict[str, list[Callable[[Self], None] | str]]" = {}
     __hidden__: tuple[str, ...] = ()
-    __auto_id__: Callable[[], Any] = noop_autoid
+    __auto_id__: Callable[[], Any] = None # type: ignore
     _tbl: Table
     _primary: str | None
 
@@ -242,8 +242,27 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
     @classmethod
     def bulk_create(cls, records: list[dict]):
         """Insert multiple records at once."""
-        cls._tbl.insert_many(records)
-        return [cls(**record) for record in records]  # Return list of instances
+        pk = cls._primary
+        prepared = []                   # (record, instance, db_generates_id)
+        for rec in records:
+            rec = dict(rec)
+            db_id = bool(pk and getattr(cls, "_primary_auto", False) and not rec.get(pk))
+            if pk and not db_id and not rec.get(pk) and cls.__auto_id__ is not None: # type: ignore
+                rec[pk] = cls.__auto_id__() # type: ignore
+            inst = cls(**({**rec, pk: None} if db_id else rec))
+            cls._execute_hooks("before_create", inst)
+            for key in rec:
+                if not (db_id and key == pk):
+                    cls._execute_validators(key, inst)
+            if db_id:
+                rec.pop(pk, None)
+            prepared.append((rec, inst, db_id))
+        ids = cls._tbl.insert_each([r for r, _, _ in prepared])
+        for (_, inst, db_id), rowid in zip(prepared, ids):
+            if db_id and pk:
+                setattr(inst, pk, rowid) # type: ignore
+            cls._execute_hooks("after_create", inst)
+        return [inst for _, inst, _ in prepared]
 
     @classmethod
     def bulk_update(cls, records: list[dict], key: str | object = NULL):
