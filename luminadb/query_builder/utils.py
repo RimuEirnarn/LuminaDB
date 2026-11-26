@@ -72,12 +72,11 @@ def parse_orders(order: CacheOrders):
         check_iter(order, ("asc", "desc"))  # type: ignore
         return f"{ord_} {order_by}"
     if isinstance(order, tuple) and isinstance(order[0], tuple):
-
-        return ", ".join(
-            f"{ord_} {order_by}"
-            for ord_, order_by in order
-            if check_iter((ord_, order_by), ("asc", "desc"))
-        )
+        parts = []
+        for ord_, order_by in order:
+            check_iter((ord_, order_by), ("asc", "desc"))
+            parts.append(f"{ord_} {order_by}")
+        return ", ".join(parts)
     raise TypeError("What?", type(order))
 
 
