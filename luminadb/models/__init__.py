@@ -413,7 +413,7 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
                 and constraint.target == f"{self.__table_name__}/{self._primary}"
             ):
                 foreign_key = constraint.column
-                return related_model.where(**{foreign_key: self._primary}).fetch_one()
+                return related_model.where(**{foreign_key: getattr(self, self._primary)}).fetch_one() # type: ignore
 
         raise ValueError(
             f"{related_model.__name__} does not have a one-to-one relationship "
