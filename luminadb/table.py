@@ -236,6 +236,14 @@ class Table: # pylint: disable=too-many-instance-attributes
             self._dirty = True
         return rlastrowid
 
+    def insert_each(self, datas: list[Data]):
+        """Insert records one by one inside one transaction; return each lastrowid."""
+        ids = []
+        with self:                      # all or nothing
+            for data in datas:
+                ids.append(self.insert(data))
+        return ids
+
     def insert_multiple(self, datas: list[Data]):
         """Insert multiple values
 
