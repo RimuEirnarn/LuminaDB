@@ -16,7 +16,7 @@ from .utils import (
 from .column import BuilderColumn, Column
 from .query_builder.table_creation import extract_table_creations
 from .table import Table
-from .errors import DatabaseExistsError, DatabaseMissingError
+from .errors import DatabaseExistsError, DatabaseMissingError, TableRemovedError
 from .index import Index
 
 Columns = Iterable[Column] | Iterable[BuilderColumn]
@@ -131,7 +131,7 @@ class Database: # pylint: disable=too-many-instance-attributes
         """Reset existing table with new, this rewrote entire table than altering it."""
         try:
             self.delete_table(table)
-        except OperationalError:
+        except (OperationalError, TableRemovedError):
             pass
         return self.create_table(table, columns)
 
