@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 # Let's add a little bit of 'black' magic here.
 _null = Function("__NULL__")()
-_tx_stack = ContextVar("_tx_stack", default=[])
+_tx_stack: ContextVar[dict[int, list]] = ContextVar("_tx_stack", default={})
 
 class Table: # pylint: disable=too-many-instance-attributes
     """Table. Make sure you remember how the table goes."""
@@ -71,30 +71,34 @@ class Table: # pylint: disable=too-many-instance-attributes
         self._force_dirty = False
         self._dirty = False
         self._auto = True
+        self._auto_stack = []
         self._table = check_one(table)
         self._prev_autocommit = None
         self._prev_auto = True
         self._columns: Optional[list[Column]] = list(columns) if columns else None
 
     def __enter__(self):
-        self._prev_auto = self._auto
-        self._prev_autocommit = self._sql.isolation_level
-
+        self._auto_stack.append(self._auto)
+        if not _tx_stack.get():
+            self._prev_autocommit = self._sql.isolation_level
+            self._sql.isolation_level = None
         self._auto = False
-        self._sql.isolation_level = None
         self._begin_transaction()
         return self
 
     def __exit__(self, exc_type, _, __):
-        if exc_type is None:
-            self._commit_transaction()
+        try:
+            if exc_type is None:
+                self._commit_transaction()
+                self._dirty = False
+            else:
+                self._rollback_transaction()
+                self._dirty = False
+        finally:
             self._dirty = False
-        else:
-            self._rollback_transaction()
-            self._dirty = False
-
-        self._sql.isolation_level = self._prev_autocommit
-        self._auto = self._prev_auto
+            self._auto = self._auto_stack.pop()
+            if not _tx_stack.get():
+                self._sql.isolation_level = self._prev_autocommit # type: ignore
 
     @property
     def deleted(self):
@@ -585,8 +589,10 @@ constraint is enabled."
 
     def _begin_transaction(self):
         """Start a transaction or savepoint depending on depth."""
-        stack = list(_tx_stack.get())  # copy since ContextVar values are immutable
-        depth = len(stack)
+        stack = _tx_stack.get().copy()
+        connection_id = id(self._sql)
+        current = stack.get(connection_id, None)
+        depth = len(current) if current is not None else 0
 
         if depth == 0:
             self._sql.execute("BEGIN TRANSACTION")
@@ -594,36 +600,51 @@ constraint is enabled."
             savepoint_name = f"sp_{depth}"
             self._sql.execute(f"SAVEPOINT {savepoint_name}")
 
-        stack.append(True)
+        if isinstance(current, list):
+            current.append(True)
+        else:
+            stack[connection_id] = [True]
         _tx_stack.set(stack)
 
     def _commit_transaction(self):
         """Commit or release savepoint depending on depth."""
-        stack = list(_tx_stack.get())
-        depth = len(stack)
+        stack = _tx_stack.get().copy()
+        connection_id = id(self._sql)
+        current = stack.get(connection_id, None)
+        if current is None:
+            current = [True]
+        depth = len(current)
 
-        if depth == 1:
-            self._sql.commit()
-        elif depth > 1:
-            savepoint_name = f"sp_{depth-1}"
-            self._sql.execute(f"RELEASE SAVEPOINT {savepoint_name}")
-        stack.pop()
-        _tx_stack.set(stack)
+        try:
+            if depth == 1:
+                self._sql.commit()
+            elif depth > 1:
+                savepoint_name = f"sp_{depth-1}"
+                self._sql.execute(f"RELEASE SAVEPOINT {savepoint_name}")
+        finally:
+            # ??? Not sure how it'll go...
+            current.pop()
+            _tx_stack.set(stack)
 
     def _rollback_transaction(self):
         """Rollback or rollback to savepoint depending on depth."""
-        stack = list(_tx_stack.get())
-        depth = len(stack)
+        stack = _tx_stack.get().copy()
+        connection_id = id(self._sql)
+        current = stack.get(connection_id, None)
+        if current is None:
+            current = [True]
+        depth = len(current)
 
-        if depth == 1:
-            self._sql.rollback()
-        elif depth > 1:
-            savepoint_name = f"sp_{depth-1}"
-            self._sql.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}"
-            )
-
-        stack.pop()
-        _tx_stack.set(stack)
+        try:
+            if depth == 1:
+                self._sql.rollback()
+            elif depth > 1:
+                savepoint_name = f"sp_{depth-1}"
+                self._sql.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}"
+                )
+        finally:
+            current.pop()
+            _tx_stack.set(stack)
 
     def count(self):
         """Count how much objects/rows stored in this table"""
