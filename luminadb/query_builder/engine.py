@@ -16,7 +16,8 @@ from .utils import (
 from ..errors import SecurityError
 from ..functions import ParsedFn
 from ..signature import Signature
-from ..utils import check_one, check_iter, null
+from ..operators import Alias
+from ..utils import check_one, check_iter, check_qualified, null
 from ..utils import generate_ids
 
 
@@ -53,6 +54,13 @@ class QueryParams:
         )
 
 
+def _format_column(column: "str | Alias") -> str:
+    """Validate one select-list entry and render it (`col` or `col as alias`)."""
+    if isinstance(column, Alias):
+        return f"{check_one(column.column)} as {check_one(column.alias)}"
+    return check_one(column)
+
+
 @lru_cache
 def _build_select(query_params: QueryParams, depth: int = 0):
     if depth < 0 or depth >= MAX_SUBQUERY_STACK_LIMIT:
@@ -69,11 +77,10 @@ def _build_select(query_params: QueryParams, depth: int = 0):
             (query_params.only.name, *(a for a in query_params.only.values if a != "*"))
         )
         data.update(databin)
+    elif isinstance(query_params.only, Alias):
+        what_ = _format_column(query_params.only)
     elif isinstance(query_params.only, tuple):
-        generator = (
-            column_name for column_name in query_params.only if check_one(column_name)
-        )
-        what_ = f"{', '.join(generator)}"  # type: ignore
+        what_ = ", ".join(_format_column(column) for column in query_params.only)
     elif query_params.only != "*" and isinstance(query_params.only, str):
         what_ = check_one(query_params.only)  # type: ignore
 
@@ -166,10 +173,25 @@ def _handle_like(key, middle, val):
     return clause
 
 
+def _check_key(key: str, known: "frozenset[str] | None") -> str:
+    """Validate a condition key and return its parameter-name-safe form."""
+    if known is None:
+        check_one(key)
+    else:
+        check_qualified(key, known)
+    return key.replace(".", "__")  # parameter names cannot contain a dot
+
+
 def extract_signature(  # pylint: disable=too-many-locals
-    filter_: Condition | CacheCond = None, suffix: str = "_check", depth: int = 0
+    filter_: Condition | CacheCond = None,
+    suffix: str = "_check",
+    depth: int = 0,
+    known: "frozenset[str] | None" = None,
 ):
-    """Extract filter signature."""
+    """Extract filter signature.
+
+    When `known` (table aliases of a join) is given, keys must be `alias.column`
+    and the alias must be in `known`; otherwise keys are plain column names."""
     if depth < 0 or depth >= MAX_SUBQUERY_STACK_LIMIT:
         raise RecursionError(
             "Subquery builder has reached recursion limit of"
@@ -186,7 +208,7 @@ def extract_signature(  # pylint: disable=too-many-locals
     data: dict[str, Any] = {}
 
     for key, value in filter_.items():
-        check_one(key)
+        pkey = _check_key(key, known)
         condition_id = generate_ids()
         if not isinstance(value, Signature):
             value = Signature(value, "=")
@@ -196,7 +218,7 @@ def extract_signature(  # pylint: disable=too-many-locals
             Signature(
                 ":"
                 + NAMING_FORMAT.format(
-                    key=key,
+                    key=pkey,
                     suffix=suffix,
                     call_id=call_id,
                     depth=depth,
@@ -233,7 +255,7 @@ def extract_signature(  # pylint: disable=too-many-locals
         if val.value is not null:
             data[
                 NAMING_FORMAT.format(
-                    key=key,
+                    key=pkey,
                     suffix=suffix,
                     call_id=call_id,
                     depth=depth,

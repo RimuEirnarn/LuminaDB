@@ -22,6 +22,7 @@ the same engine, and a model can hand you its `Table` with `Model.get_table()`.
 - [SQL functions](#sql-functions)
 - [Updating and deleting](#updating-and-deleting)
 - [Foreign keys and subqueries](#foreign-keys-and-subqueries)
+- [Joins and column aliases](#joins-and-column-aliases)
 - [Indexes](#indexes)
 - [Transactions](#transactions)
 - [CSV import and export](#csv-import-and-export)
@@ -366,6 +367,90 @@ members.select(what="name")  # -> ['Eve']
 ```
 
 Subqueries nest up to 10 levels deep, after which `RecursionError` is raised.
+
+---
+
+## Joins and column aliases
+
+`table.join(other, on=..., type=...)` returns a read-only join query. Joins are always a single SQL
+statement and **`what` is required**: list the columns you want per table, as `{table_or_alias:
+columns}`. `"*"` is not supported in joins because expanding it would need an extra query.
+
+```python
+from luminadb import as_
+
+teams = db.create_table("teams", [integer("id").primary(), text("name")])
+players = db.create_table("players", [
+    integer("id").primary(),
+    text("name"),
+    integer("team_id").allow_null().foreign("teams/id"),
+])
+teams.insert_many([{"id": 1, "name": "Red"}, {"id": 2, "name": "Blue"}])
+players.insert_many([
+    {"id": 1, "name": "Ann", "team_id": 1},
+    {"id": 2, "name": "Bo", "team_id": 1},
+    {"id": 3, "name": "Cy", "team_id": None},
+])
+
+players.join(teams, on=("team_id", "id")).select(
+    what={"players": ("id", "name"), "teams": (as_("name", "team"),)},
+    order=("players.id", "asc"),
+)
+# -> [{'players': {'id': 1, 'name': 'Ann'}, 'teams': {'team': 'Red'}},
+#     {'players': {'id': 2, 'name': 'Bo'}, 'teams': {'team': 'Red'}}]
+```
+
+Rows are **nested** by table name (or alias), so two tables that both have an `id` column never
+overwrite each other, and `row.players.name` works like any other `Row`.
+
+- `on` is `(left_column, right_column)`, or a list of those (joined with `AND`). A bare left column
+  belongs to the table you called `.join()` on, a bare right column to the table being joined. Write
+  `alias.column` to be explicit. It cannot be inferred from foreign keys here; the Model API can.
+- `type` is `inner` (default), `left`, `right`, `full` or `cross`. `right` and `full` need SQLite
+  3.39+. `on` is required except for `cross`, so you cannot get a cartesian product by accident.
+- `where` and `order` keys must be qualified: `{"players.id": op >= 2}`, `("players.id", "asc")`.
+  All the `op` helpers work.
+- The unmatched side of an outer join is `None`:
+
+```python
+players.join(teams, on=("team_id", "id"), type="left").select(
+    what={"players": ("name",), "teams": ("name",)},
+    where={"players.id": op >= 2},
+    order=("players.id", "asc"),
+)
+# -> [{'players': {'name': 'Bo'}, 'teams': {'name': 'Red'}},
+#     {'players': {'name': 'Cy'}, 'teams': None}]
+```
+
+`select_one(what=..., where=...)` returns the first row (an empty `Row` when nothing matches), and
+`.join()` can be chained. Outer-joined sides are detected through `rowid`, so a table created
+`WITHOUT ROWID` cannot be the nullable side of an outer join.
+
+### Table aliases
+
+`table.alias("x")` renames a table inside a join, which is how you join a table with itself:
+
+```python
+players.alias("a").join(players.alias("b"), on=("team_id", "team_id")).select(
+    what={"a": ("name",), "b": (as_("name", "mate"),)},
+    where={"a.id": 1},
+    order=("b.id", "asc"),
+)
+# -> [{'a': {'name': 'Ann'}, 'b': {'mate': 'Ann'}},
+#     {'a': {'name': 'Ann'}, 'b': {'mate': 'Bo'}}]
+```
+
+### Column aliases
+
+`as_("column", "alias")` is `column AS alias`. It works in a plain `select()` too:
+
+```python
+players.select(what=("id", as_("name", "player")), limit=1)  # -> [{'id': 1, 'player': 'Ann'}]
+players.select(what=as_("name", "player"), order=("id", "asc"))  # -> ['Ann', 'Bo', 'Cy']
+```
+
+Aliases, join types and column names are validated like every other identifier (see
+[Safety rules](#safety-rules)); values always stay parameters.
 
 ---
 

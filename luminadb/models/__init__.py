@@ -30,6 +30,7 @@ from .helpers import (
     initiate_validators,
 )
 from .query_builder import QueryBuilder
+from .join import ModelJoinQuery
 from .errors import ConstraintError
 from ..errors import DatabaseExistsError
 from ..database import Database, Table
@@ -449,6 +450,20 @@ class BaseModel:  # pylint: disable=too-few-public-methods,too-many-public-metho
         )
 
     @classmethod
+    def join(
+        cls,
+        other: "Type[T]",
+        on: tuple[str, str] | list[tuple[str, str]] | None = None,
+        type: str = "inner",  # pylint: disable=redefined-builtin
+    ) -> "ModelJoinQuery":
+        """Join with another Model. Returns typed `(Self, Other)` tuples.
+
+        `on` is `(column of this model, column of other)`; when omitted it is
+        inferred from `Foreign()` constraints in either direction. `type` is
+        inner, left, right, full or cross."""
+        return ModelJoinQuery(cls, other, on, type)
+
+    @classmethod
     def get_table(cls):
         """Return table instance"""
         return cls._tbl
@@ -495,6 +510,7 @@ __all__ = [
     "Primary",
     "Foreign",
     "QueryBuilder",
+    "ModelJoinQuery",
     "CASCADE",
     "DEFAULT",
     "NOACT",

@@ -1,4 +1,5 @@
 """Core database utility"""
+
 # pylint: disable=useless-parent-delegation
 
 # This module must not import anything from this package except errors.
@@ -12,7 +13,6 @@ from string import punctuation
 from typing import Any, Generic, Iterable, Iterator, Mapping, TypeVar, TypeAlias
 
 from .errors import SecurityError
-
 
 T = TypeVar("T")
 _INVALID_STR = punctuation.replace("_", "")
@@ -183,7 +183,7 @@ class Sentinel:  # pylint: disable=too-few-public-methods
         return "<Sentinel>"
 
 
-class Row(Mapping[str, T], Generic[T], dict): # type: ignore
+class Row(Mapping[str, T], Generic[T], dict):  # type: ignore
     """Attribute Dictionary"""
 
     def __setitem__(self, key: str, value: T):
@@ -216,10 +216,8 @@ def sqlite_multithread_check():
     """sqlite mulththread check"""
     thread_safe = {0: 0, 2: 1, 1: 3}
     conn = connect(":memory:", check_same_thread=False)
-    data = conn.execute(
-        "select * from pragma_compile_options where compile_options \
-like 'THREADSAFE=%'"
-    ).fetchone()[0]
+    data = conn.execute("select * from pragma_compile_options where compile_options \
+like 'THREADSAFE=%'").fetchone()[0]
     conn.close()
 
     threadsafety_value = int(data.split("=")[1])
@@ -246,6 +244,37 @@ def check_one(data: str, bypass_list: tuple[str, ...] | None = None):
             return data
         raise SecurityError(f'"{data}" is a reserved SQL keyword and cannot be used.')
     return data
+
+
+def check_ident(name: str) -> str:
+    """Strict identifier check (letters, digits, underscore; no spaces or punctuation)
+    for names that get spliced into SQL, such as table aliases and column aliases.
+    It also applies `check_one`, so reserved SQL keywords are refused."""
+    if not isinstance(name, str) or not name.isidentifier():
+        exc = SecurityError("Cannot parse unsafe identifier.")
+        exc.add_note(f"Target: {name!r}")
+        raise exc
+    return check_one(name)
+
+
+def check_qualified(name: str, known: Iterable[str] | None = None) -> str:
+    """Check `column` or `table.column`. When `known` is given the name must be
+    qualified and the qualifier must be one of `known` (ValueError otherwise)."""
+    parts = name.split(".") if isinstance(name, str) else [name]
+    if len(parts) > 2:
+        exc = SecurityError("Cannot parse unsafe data.")
+        exc.add_note(f"Target: {name!r}")
+        raise exc
+    for part in parts:
+        check_ident(part)
+    if known is not None:
+        if len(parts) != 2:
+            raise ValueError(
+                f"{name!r} must be qualified as table.column (or alias.column) in a join"
+            )
+        if parts[0] not in known:
+            raise ValueError(f"{parts[0]!r} is not a table/alias in this join")
+    return name
 
 
 def check_iter(data: Iterable[str], bypass_list: tuple[str, ...] | None = None):
@@ -285,6 +314,7 @@ def test_installed():
     always returns true"""
     return True
 
+
 def generate_ids():
     """Generate ids for statements"""
     return str(uuid4().int)
@@ -297,16 +327,16 @@ Query: TypeAlias = Row[Any]
 SquashedQueries: TypeAlias = Row[list[Any]]
 Queries: TypeAlias = list[Query] | SquashedQueries
 
+
 def crunch(query: Queries | list[dict[str, Any]]) -> Row[list[Any]]:
     """Crunch queries into Row that all of its value become a list."""
     data: Row[list[Any]] = Row()
     for value in query:
-        for key, val in value.items(): # type: ignore
+        for key, val in value.items():  # type: ignore
             if key not in data:
                 data[key] = []
             data[key].append(val)
     return data
-
 
 
 __all__ = [

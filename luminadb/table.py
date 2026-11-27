@@ -16,6 +16,8 @@ from typing import (
 
 from luminadb.functions import ParsedFn, Function, count
 from luminadb.subquery import SubQuery
+from luminadb.operators import Alias
+from .join import JoinQuery, TableRef
 
 
 from .utils import check_iter, check_one, Row, crunch
@@ -49,6 +51,21 @@ if TYPE_CHECKING:
 # Let's add a little bit of 'black' magic here.
 _null = Function("__NULL__")()
 _tx_stack: ContextVar[dict[int, list]] = ContextVar("_tx_stack", default={})
+
+def _single_column(what) -> Optional[str]:
+    """If `what` selects exactly one plain column, return the key it is
+    returned under (its alias if it has one); otherwise None."""
+    if isinstance(what, Alias):
+        return what.alias
+    if isinstance(what, ParsedFn):
+        return None
+    if isinstance(what, str):
+        return None if what == "*" else what
+    if isinstance(what, tuple) and len(what) == 1:
+        item = what[0]
+        return item.alias if isinstance(item, Alias) else item
+    return None
+
 
 class Table: # pylint: disable=too-many-instance-attributes
     """Table. Make sure you remember how the table goes."""
@@ -387,13 +404,11 @@ class Table: # pylint: disable=too-many-instance-attributes
         query, data = build_select(
             self._table, where, what, limit, offset, order
         )  # type: ignore
-        just_a_column = (isinstance(what, tuple) and len(what) == 1) or (
-            isinstance(what, str) and what != "*"
-        )
+        column = _single_column(what)
         cursor = self._exec(query, data)
         data = cursor.fetchall()
-        if just_a_column:
-            return [d[what] for d in data]
+        if column is not None:
+            return [d[column] for d in data]
         if flatten:
             return crunch(data)
         if isinstance(what, ParsedFn):
@@ -467,9 +482,7 @@ class Table: # pylint: disable=too-many-instance-attributes
         start = page * length
         # ! A `only` keyword as a string or tuple of 1 element will
         # ! actually be a problem if they left alone because the end result is a list
-        just_a_column = (isinstance(what, str) and what != "*") or (
-            isinstance(what, tuple) and len(what) == 1
-        )
+        just_a_column = _single_column(what) is not None
         while True:
             query, data = build_select(
                 self._table, where, what, length, start, order
@@ -540,11 +553,30 @@ class Table: # pylint: disable=too-many-instance-attributes
             return returned[what.parse_sql()[0]]
         if not returned:
             return Row()
-        if isinstance(what, tuple) and len(what) == 1:
-            return returned[what]
-        if isinstance(what, str) and what != "*":
-            return returned[what]
+        column = _single_column(what)
+        if column is not None:
+            return returned[column]
         return returned
+
+    def alias(self, name: str) -> TableRef:
+        """Refer to this table under another name inside a join (`FROM x AS name`).
+        Needed to join a table with itself."""
+        return TableRef(self, name)
+
+    def join(
+        self,
+        other: "Table | TableRef",
+        on: Any = None,
+        type: str = "inner",  # pylint: disable=redefined-builtin
+        alias: Optional[str] = None,
+    ) -> JoinQuery:
+        """Join with another table (read-only). See `JoinQuery.join`.
+
+        Example:
+            users.join(groups, on=("gid", "id"), type="left").select(
+                what={"users": ("id", "username"), "groups": ("name",)})
+        """
+        return TableRef(self).join(other, on=on, type=type, alias=alias)
 
     def columns(self):
         """Table columns"""
