@@ -220,7 +220,7 @@ def build_join_select(  # pylint: disable=too-many-arguments,too-many-locals
     for join in joins:
         query += f" {JOIN_TYPES[join.kind]} {table_ref(join.table, join.alias)}"
         if join.on:
-            query += " on " + " and ".join(f"{l} = {r}" for l, r in join.on)
+            query += " on " + " and ".join(f"{left} = {right}" for left, right in join.on)
 
     where, data = extract_signature(condition, known=frozenset(known))
     if where:
