@@ -17,7 +17,8 @@ What API should we bring? This todo is for simplification; you can do anything w
 - [x] Table API function support
 - [x] Pragmas (Database, only select few)
 - [x] Table API subquery
-- [ ] Table API `as` keyword
+- [x] Table API `as` keyword (`as_`)
+- [x] Table API join (nested rows, `what` required), Model API join + `group()`
 - [x] sqlite select data squash[^1] (squash=True, Table API)
 - [x] sqlite select `what` data. Instead of using `select *`, we should also have `what`. Bring up few data than select everything.[^2]
 - [x] Provide caching functions; not to cache sql returns but sql query, etc.[^3]

@@ -6,7 +6,7 @@ from .database import Database
 from .utils import Row, SKIP
 from .column import Column, text, integer, blob, real
 from .signature import op
-from .operators import this
+from .operators import this, as_
 from .table import Table
 from .index import Index
 
@@ -20,6 +20,7 @@ __all__ = [
     "Database",
     "Table",
     "this",
+    "as_",
     "op",
     "Column",
     "SKIP",

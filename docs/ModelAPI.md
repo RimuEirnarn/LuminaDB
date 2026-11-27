@@ -319,6 +319,33 @@ The other `on_delete` actions behave as in SQLite: `SETNULL` sets the child's co
 the field a default of `None` so it can be loaded back), and `RESTRICT` refuses to delete a parent
 that still has children.
 
+### Joins
+
+`Model.join(Other)` fetches both sides in one query. A model is a typed dataclass, so a related
+instance is never stored inside another one; you get **tuples** instead:
+
+```python
+Post.join(User).fetch()                       # -> [(Post(...), User(...)), ...]
+User.join(Post, type="left").fetch()          # -> [(User(...), Post(...) or None), ...]
+```
+
+- `on` is found from the `Foreign` constraints, in either direction. If there is none, or more than
+  one, pass it yourself: `Post.join(User, on=("user_id", "id"))` (column of this model, column of the
+  other).
+- `type` is `inner` (default), `left`, `right`, `full` or `cross`. The side an outer join leaves
+  unmatched is `None`.
+- It has `where()`, `order_by()`, `limit()`, `offset()`, `fetch()` and `fetch_one()`. A bare column
+  name belongs to the model you called `.join()` on; reach the other one with
+  `where(**{"post.title": "Hello"})`.
+- `group()` turns it into a one-to-many view, grouped by the primary key of the first model:
+
+```python
+for user, posts in User.join(Post, type="left").order_by("username").group():
+    print(user.username, [p.title for p in posts])   # users without posts get []
+```
+
+Unlike the Table API, `what` is not needed here: the columns come from the dataclass fields.
+
 ---
 
 ## Hooks, validators and type checking

@@ -210,7 +210,7 @@ db.foreign_pragma()  # -> {'foreign_keys': 1}
 ## Talking to SQLite directly
 
 `db.sql` is the underlying `sqlite3.Connection`, and its rows come back as `Row` dicts. Use it for
-anything LuminaDB does not cover, such as `OR` conditions, joins or `PRAGMA table_info`:
+anything LuminaDB does not cover, such as `OR` conditions or `PRAGMA table_info`:
 
 ```python
 db.sql.execute("select count(*) as total from users").fetchone()  # -> {'total': 3}
