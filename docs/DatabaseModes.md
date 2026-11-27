@@ -3,7 +3,7 @@
 This page covers how a `Database` behaves: the options you can pass when opening one, how it
 handles threads and shutdown, and how transactions work.
 
-> **About the examples.** The examples on this page were run against LuminaDB 0.8.1. A value after
+> **About the examples.** The examples on this page were run against LuminaDB 0.8.2. A value after
 > `# ->` is the real result, copied from that run.
 
 ## Contents

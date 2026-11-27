@@ -7,27 +7,36 @@ small column builders, and you read and write rows with plain Python dicts. No S
 If you prefer declaring tables as Python classes, see the [Model API](ModelAPI.md). Both APIs share
 the same engine, and a model can hand you its `Table` with `Model.get_table()`.
 
-> **About the examples.** The examples in this guide were run against LuminaDB 0.8.1. A value after
+> **About the examples.** The examples in this guide were run against LuminaDB 0.8.2. A value after
 > `# ->` is the real result, copied from that run. Blocks build on each other, so read them in order.
 
 ## Contents
 
-- [Connecting](#connecting)
-- [Defining columns](#defining-columns)
-- [Creating and managing tables](#creating-and-managing-tables)
-- [Inserting](#inserting)
-- [Selecting](#selecting)
-- [Conditions (the `where` argument)](#conditions-the-where-argument)
-- [Sorting, limiting and pagination](#sorting-limiting-and-pagination)
-- [SQL functions](#sql-functions)
-- [Updating and deleting](#updating-and-deleting)
-- [Foreign keys and subqueries](#foreign-keys-and-subqueries)
-- [Joins and column aliases](#joins-and-column-aliases)
-- [Indexes](#indexes)
-- [Transactions](#transactions)
-- [CSV import and export](#csv-import-and-export)
-- [Safety rules](#safety-rules)
-- [Exceptions](#exceptions)
+- [Table API Guide](#table-api-guide)
+  - [Contents](#contents)
+  - [Connecting](#connecting)
+  - [Defining columns](#defining-columns)
+  - [Creating and managing tables](#creating-and-managing-tables)
+    - [Changing an existing table](#changing-an-existing-table)
+  - [Inserting](#inserting)
+  - [Selecting](#selecting)
+    - [Rows](#rows)
+  - [Conditions (the `where` argument)](#conditions-the-where-argument)
+    - [The `luminadb.operators` helpers](#the-luminadboperators-helpers)
+  - [Sorting, limiting and pagination](#sorting-limiting-and-pagination)
+  - [SQL functions](#sql-functions)
+  - [Updating and deleting](#updating-and-deleting)
+    - [`SKIP`](#skip)
+    - [Deleting](#deleting)
+  - [Foreign keys and subqueries](#foreign-keys-and-subqueries)
+  - [Joins and column aliases](#joins-and-column-aliases)
+    - [Table aliases](#table-aliases)
+    - [Column aliases](#column-aliases)
+  - [Indexes](#indexes)
+  - [Transactions](#transactions)
+  - [CSV import and export](#csv-import-and-export)
+  - [Safety rules](#safety-rules)
+  - [Exceptions](#exceptions)
 
 ---
 
